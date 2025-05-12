@@ -1,4 +1,6 @@
-const BotDevices = () => {
+import type { JSX } from "react";
+
+const BotDevices = (): JSX.Element => {
 	return (
 		<div className="h-screen py-8 overflow-y-auto bg-white border-l border-r sm:w-64 w-60 dark:bg-gray-900 dark:border-gray-700">
 			<h2 className="px-5 text-lg font-medium text-gray-800 dark:text-white">Bot Device</h2>
