@@ -1,13 +1,11 @@
-import { useTheme } from "../context/theme/useTheme";
+import type { JSX } from "react";
+import Map from "../components/Map";
 
-const Home = () => {
-	const { theme } = useTheme();
-
+const Home = (): JSX.Element => {
 	return (
-		<div>
-			<h1>Welcome to Home page</h1>
-			<p>Current theme equal to: {theme}</p>
-		</div>
+		<section className="w-full px-8 py-6 m-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+			<Map />
+		</section>
 	);
 };
 

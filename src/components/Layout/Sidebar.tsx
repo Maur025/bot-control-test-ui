@@ -1,7 +1,8 @@
+import type { JSX } from "react";
 import { useTheme } from "../../context/theme/useTheme";
 import BotDevices from "./BotDevices";
 
-const Sidebar = () => {
+const Sidebar = (): JSX.Element => {
 	const { theme, toggleTheme } = useTheme();
 
 	return (
