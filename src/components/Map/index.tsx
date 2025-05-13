@@ -11,6 +11,10 @@ import { fromLonLat } from "ol/proj";
 import { useCurrentPosition } from "./useCurrentPosition";
 import { Point } from "ol/geom";
 import { Circle as CircleStyle, Fill, Stroke, Style } from "ol/style";
+import { useSocketStore } from "../../store/useSocketStore";
+import { SocketTopic } from "../../socket-topic";
+
+const { DEVICE_LAST } = SocketTopic;
 
 const Map = (): JSX.Element => {
 	const divMapRef = useRef<HTMLDivElement>(null);
@@ -18,7 +22,9 @@ const Map = (): JSX.Element => {
 	const viewRef = useRef<View>(null);
 	const positionFeatureRef = useRef<Feature>(null);
 	const vectorSourceRef = useRef<VectorSource>(null);
+
 	const { currentPosition } = useCurrentPosition();
+	const { socket } = useSocketStore();
 
 	useEffect(() => {
 		if (!currentPosition) {
@@ -63,6 +69,22 @@ const Map = (): JSX.Element => {
 
 		return () => mapRef.current?.setTarget(undefined);
 	}, [currentPosition]);
+
+	useEffect(() => {
+		if (!socket) {
+			return;
+		}
+
+		console.log(socket);
+
+		socket.on(DEVICE_LAST, (payload) => {
+			console.log(payload);
+		});
+
+		return () => {
+			socket.off(DEVICE_LAST);
+		};
+	}, [socket]);
 
 	return <div ref={divMapRef} className="w-full h-full z-50"></div>;
 };

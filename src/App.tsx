@@ -4,8 +4,20 @@ import Layout from "./components/Layout";
 import { ThemeProvider } from "./context/theme/ThemeProvider";
 import { BrowserRouter, Route, Routes } from "react-router";
 import TestPage from "./pages/TestPage";
+import { useEffect } from "react";
+import { useSocketStore } from "./store/useSocketStore";
 
 function App() {
+	const { connect, disconnect } = useSocketStore();
+
+	useEffect(() => {
+		connect();
+
+		return () => {
+			disconnect();
+		};
+	}, [connect, disconnect]);
+
 	return (
 		<ThemeProvider>
 			<BrowserRouter>
