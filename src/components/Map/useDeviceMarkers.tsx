@@ -1,6 +1,6 @@
 import { Feature } from "ol";
 import VectorSource from "ol/source/Vector";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import type { DeviceCurrentLocation } from "../../models/device-current-location";
 import { Geometry, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
@@ -8,9 +8,13 @@ import { Icon, Style } from "ol/style";
 import { SocketTopic } from "../../socket-topic";
 import { useSocketStore } from "../../store/useSocketStore";
 
+interface DeviceMarkersResponse {
+	deviceFeatureRef: RefObject<Map<string, Feature>>;
+}
+
 const { DEVICE_LAST } = SocketTopic;
 
-export const useDeviceMarkers = (deviceVectorSource: VectorSource) => {
+export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarkersResponse => {
 	const deviceFeatureRef = useRef<Map<string, Feature>>(new Map());
 	const { socket } = useSocketStore();
 
@@ -23,8 +27,6 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource) => {
 			id: deviceId,
 			last: { lat = 0, lon = 0 },
 		}: DeviceCurrentLocation) => {
-			console.log("esta aqui");
-
 			if (!deviceId) {
 				return;
 			}
@@ -45,8 +47,6 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource) => {
 
 				if (geometry instanceof Point) {
 					geometry.setCoordinates(fromLonLat([lon, lat]));
-				} else {
-					console.log("no existe o no es un punto");
 				}
 			}
 		};
@@ -57,4 +57,6 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource) => {
 			socket.off(DEVICE_LAST, deviceLastPositionHandler);
 		};
 	}, [socket, deviceVectorSource]);
+
+	return { deviceFeatureRef };
 };
