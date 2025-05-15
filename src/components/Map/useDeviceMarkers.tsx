@@ -51,10 +51,10 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 			}
 		};
 
-		socket.on(DEVICE_LAST, deviceLastPositionHandler);
+		// socket.on(DEVICE_LAST, deviceLastPositionHandler);
 
 		return () => {
-			socket.off(DEVICE_LAST, deviceLastPositionHandler);
+			// socket.off(DEVICE_LAST, deviceLastPositionHandler);
 		};
 	}, [socket, deviceVectorSource]);
 
