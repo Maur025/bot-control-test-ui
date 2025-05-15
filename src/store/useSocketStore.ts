@@ -16,7 +16,12 @@ export const useSocketStore = create<SocketState>((set) => ({
 	connect: () => {
 		const { VITE_SOCKET_URL } = env;
 
-		const socket: Socket = io(VITE_SOCKET_URL);
+		const socket: Socket = io(VITE_SOCKET_URL, {
+			reconnection: true,
+			reconnectionDelay: 10000,
+			reconnectionDelayMax: 15000,
+			reconnectionAttempts: 20,
+		});
 
 		set({ socket });
 
