@@ -1,14 +1,11 @@
 import { io, type Socket } from "socket.io-client";
 import { create } from "zustand";
-import { SocketTopic } from "../socket-topic";
 
 interface SocketState {
 	socket: Socket | null;
 	connect: () => void;
 	disconnect: () => void;
 }
-
-const { CONNECT, DISCONNECT } = SocketTopic;
 const env = import.meta.env;
 
 export const useSocketStore = create<SocketState>((set) => ({
@@ -24,14 +21,6 @@ export const useSocketStore = create<SocketState>((set) => ({
 		});
 
 		set({ socket });
-
-		socket.on(CONNECT, () => {
-			console.log(`Connected with id ${socket.id}`);
-		});
-
-		socket.on(DISCONNECT, () => {
-			console.log("Socket disconected");
-		});
 	},
 	disconnect: () =>
 		set((state) => {
