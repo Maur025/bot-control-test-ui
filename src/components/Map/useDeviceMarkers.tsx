@@ -9,27 +9,29 @@ import { SocketTopic } from "../../socket-topic";
 import { useSocketStore } from "../../store/useSocketStore";
 import { SocketRoom } from "../../socket-room";
 import type { SingleIoResponse } from "@maur025/core-model-data";
+import { useSocketRoomHandler } from "../../hooks/useSocketRoomHandler";
 
 interface DeviceMarkersResponse {
 	deviceFeatureRef: RefObject<Map<string, Feature>>;
 }
 
-const { ROOM_JOIN, ROOM_LEAVE, DEVICE_LOCATION_LAST } = SocketTopic;
+const { DEVICE_LOCATION_LAST } = SocketTopic;
 const { MONITOR_ALL_DEVICES } = SocketRoom;
 
 export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarkersResponse => {
 	const deviceFeatureRef = useRef<Map<string, Feature>>(new Map());
 	const { socket } = useSocketStore();
+	const { joinRoom, leaveRoom } = useSocketRoomHandler();
 
 	useEffect(() => {
 		if (!socket) {
 			return;
 		}
 
-		socket.emit(ROOM_JOIN, MONITOR_ALL_DEVICES);
+		joinRoom(MONITOR_ALL_DEVICES);
 
 		const deviceLastPositionHandler = ({ data }: SingleIoResponse<DeviceCurrentLocation>) => {
-			if (!data) {
+			if (!data?.id || !deviceVectorSource) {
 				return;
 			}
 
@@ -37,10 +39,6 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 				id: deviceId,
 				last: { lat = 0, lon = 0 },
 			} = data;
-
-			if (!deviceId) {
-				return;
-			}
 
 			let feature = deviceFeatureRef.current.get(deviceId);
 
@@ -67,9 +65,10 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 		);
 
 		return () => {
-			socket.emit(ROOM_LEAVE, MONITOR_ALL_DEVICES);
+			leaveRoom(MONITOR_ALL_DEVICES);
 			socket.off(DEVICE_LOCATION_LAST, deviceLastPositionHandler);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [socket, deviceVectorSource]);
 
 	return { deviceFeatureRef };
