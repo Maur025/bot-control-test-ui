@@ -9,6 +9,8 @@ export const useSocketRoomHandler = () => {
 	const { currentRooms, joinRoom: join, leaveRoom: leave } = useRoomStore();
 
 	const joinRoom = (room: string) => {
+		console.log("se ejecuto join");
+
 		join(room);
 		socket?.emit(ROOM_JOIN, room);
 	};

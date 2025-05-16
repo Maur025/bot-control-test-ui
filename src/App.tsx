@@ -24,7 +24,7 @@ function App() {
 	}, [connect, disconnect]);
 
 	useEffect(() => {
-		if (!socket || !reconnectRooms) {
+		if (!socket) {
 			return;
 		}
 
@@ -44,7 +44,8 @@ function App() {
 			socket.off(ROOM_JOIN_RESPONSE);
 			socket.off(ROOM_LEAVE_RESPONSE);
 		};
-	}, [socket, reconnectRooms]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [socket]);
 
 	return (
 		<ThemeProvider>
