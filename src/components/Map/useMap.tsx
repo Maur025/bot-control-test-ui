@@ -57,7 +57,7 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 
 		positionFeatureRef.current.setStyle(
 			new Style({
-				image: new Icon({ src: "/marker-2.png" }),
+				image: new Icon({ src: "/marker-3.png" }),
 			}),
 		);
 

@@ -14,7 +14,7 @@ const Sidebar = (): JSX.Element => {
 				<NavLink
 					to="/"
 					end
-					className={({ isActive }) =>
+					className={({ isActive }: { isActive: boolean }) =>
 						`${
 							isActive
 								? "text-blue-500 bg-blue-100 dark:text-blue-400 dark:bg-gray-800"
@@ -41,7 +41,7 @@ const Sidebar = (): JSX.Element => {
 				<NavLink
 					to="bot"
 					end
-					className={({ isActive }) =>
+					className={({ isActive }: { isActive: boolean }) =>
 						`${
 							isActive
 								? "text-blue-500 bg-blue-100 dark:text-blue-400 dark:bg-gray-800"
@@ -68,7 +68,7 @@ const Sidebar = (): JSX.Element => {
 				<NavLink
 					to="/graphics"
 					end
-					className={({ isActive }) =>
+					className={({ isActive }: { isActive: boolean }) =>
 						`${
 							isActive
 								? "text-blue-500 bg-blue-100 dark:text-blue-400 dark:bg-gray-800"
@@ -100,7 +100,7 @@ const Sidebar = (): JSX.Element => {
 				<NavLink
 					to="notifications"
 					end
-					className={({ isActive }) =>
+					className={({ isActive }: { isActive: boolean }) =>
 						`${
 							isActive
 								? "text-blue-500 bg-blue-100 dark:text-blue-400 dark:bg-gray-800"
@@ -127,7 +127,7 @@ const Sidebar = (): JSX.Element => {
 				<NavLink
 					to="settings"
 					end
-					className={({ isActive }) =>
+					className={({ isActive }: { isActive: boolean }) =>
 						`${
 							isActive
 								? "text-blue-500 bg-blue-100 dark:text-blue-400 dark:bg-gray-800"

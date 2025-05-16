@@ -7,12 +7,15 @@ import { fromLonLat } from "ol/proj";
 import { Icon, Style } from "ol/style";
 import { SocketTopic } from "../../socket-topic";
 import { useSocketStore } from "../../store/useSocketStore";
+import { SocketRoom } from "../../socket-room";
+import type { SingleIoResponse } from "@maur025/core-model-data";
 
 interface DeviceMarkersResponse {
 	deviceFeatureRef: RefObject<Map<string, Feature>>;
 }
 
-const { DEVICE_LAST } = SocketTopic;
+const { ROOM_JOIN, ROOM_LEAVE, DEVICE_LOCATION_LAST } = SocketTopic;
+const { MONITOR_ALL_DEVICES } = SocketRoom;
 
 export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarkersResponse => {
 	const deviceFeatureRef = useRef<Map<string, Feature>>(new Map());
@@ -23,10 +26,18 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 			return;
 		}
 
-		const deviceLastPositionHandler = ({
-			id: deviceId,
-			last: { lat = 0, lon = 0 },
-		}: DeviceCurrentLocation) => {
+		socket.emit(ROOM_JOIN, MONITOR_ALL_DEVICES);
+
+		const deviceLastPositionHandler = ({ data }: SingleIoResponse<DeviceCurrentLocation>) => {
+			if (!data) {
+				return;
+			}
+
+			const {
+				id: deviceId,
+				last: { lat = 0, lon = 0 },
+			} = data;
+
 			if (!deviceId) {
 				return;
 			}
@@ -38,7 +49,7 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 					geometry: new Point(fromLonLat([lon, lat])),
 				});
 
-				feature.setStyle(new Style({ image: new Icon({ src: "/marker-3.png" }) }));
+				feature.setStyle(new Style({ image: new Icon({ src: "/navigation-3.webp" }) }));
 
 				deviceVectorSource.addFeature(feature);
 				deviceFeatureRef.current.set(deviceId, feature);
@@ -51,10 +62,13 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 			}
 		};
 
-		// socket.on(DEVICE_LAST, deviceLastPositionHandler);
+		socket.on(DEVICE_LOCATION_LAST, (payload: SingleIoResponse<DeviceCurrentLocation>) =>
+			deviceLastPositionHandler(payload),
+		);
 
 		return () => {
-			// socket.off(DEVICE_LAST, deviceLastPositionHandler);
+			socket.emit(ROOM_LEAVE, MONITOR_ALL_DEVICES);
+			socket.off(DEVICE_LOCATION_LAST, deviceLastPositionHandler);
 		};
 	}, [socket, deviceVectorSource]);
 
