@@ -17,7 +17,6 @@ export const useSocketStore = create<SocketState>((set) => ({
 			reconnection: true,
 			reconnectionDelay: 10000,
 			reconnectionDelayMax: 15000,
-			reconnectionAttempts: 20,
 		});
 
 		set({ socket });
