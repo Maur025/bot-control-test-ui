@@ -1,28 +1,59 @@
-import type { JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
+
+const { VITE_API_URL } = import.meta.env;
 
 const BotDevices = (): JSX.Element => {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [deviceList, setDeviceList] = useState<{ _id: string; name?: string }[]>([]);
+
+	useEffect(() => {
+		const getDeviceList = async () => {
+			setIsLoading(true);
+
+			const response = await fetch(`${VITE_API_URL}/api/devices`);
+			const responseBody = await response.json();
+
+			setDeviceList(() => [...responseBody.data]);
+
+			setIsLoading(false);
+		};
+
+		getDeviceList();
+	}, []);
+
 	return (
-		<div className="h-screen py-8 overflow-y-auto bg-white border-l border-r sm:w-64 w-60 dark:bg-gray-900 dark:border-gray-700">
-			<h2 className="px-5 text-lg font-medium text-gray-800 dark:text-white">Bot Device</h2>
+		<div className="h-screen py-8 overflow-y-auto bg-white border-l border-r sm:w-64 w-60 dark:bg-gray-900 dark:border-gray-700 scrollbar-thin scrollbar-track-gray-900 scrollbar-thumb-gray-400">
+			<h2 className="px-5 text-lg font-medium text-gray-800 dark:text-white">
+				Bot Device(s)
+			</h2>
 
 			<div className="mt-8 space-y-4">
-				<button className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
-					<img
-						className="object-cover w-8 h-8 rounded-full"
-						src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=faceare&facepad=3&w=688&h=688&q=100"
-						alt=""
-					/>
+				{!isLoading &&
+					deviceList.length > 0 &&
+					deviceList.map((device) => (
+						<button
+							key={device._id}
+							className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none"
+						>
+							<img
+								className="object-cover w-8 h-8 rounded-full"
+								src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=faceare&facepad=3&w=688&h=688&q=100"
+								alt=""
+							/>
 
-					<div className="text-left rtl:text-right">
-						<h1 className="text-sm font-medium text-gray-700 capitalize dark:text-white">
-							Mia John
-						</h1>
+							<div className="text-left rtl:text-right">
+								<h1 className="text-sm font-medium text-gray-700 capitalize dark:text-white">
+									{device?.name ?? "N/A"}
+								</h1>
 
-						<p className="text-xs text-gray-500 dark:text-gray-400">11.2 Followers</p>
-					</div>
-				</button>
+								<p className="text-xs text-gray-500 dark:text-gray-400">
+									11.2 Followers
+								</p>
+							</div>
+						</button>
+					))}
 
-				<button className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
+				{/* <button className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
 					<img
 						className="object-cover w-8 h-8 rounded-full"
 						src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&h=880&q=80"
@@ -36,28 +67,9 @@ const BotDevices = (): JSX.Element => {
 
 						<p className="text-xs text-gray-500 dark:text-gray-400">1.2 Followers</p>
 					</div>
-				</button>
+				</button> */}
 
-				<button className="flex items-center w-full px-5 py-2 transition-colors duration-200 bg-gray-100 dark:bg-gray-800 gap-x-2 focus:outline-none">
-					<div className="relative">
-						<img
-							className="object-cover w-8 h-8 rounded-full"
-							src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&h=764&q=100"
-							alt=""
-						/>
-						<span className="h-2 w-2 rounded-full bg-emerald-500 absolute right-0.5 ring-1 ring-white bottom-0"></span>
-					</div>
-
-					<div className="text-left rtl:text-right">
-						<h1 className="text-sm font-medium text-gray-700 capitalize dark:text-white">
-							Jane Doe
-						</h1>
-
-						<p className="text-xs text-gray-500 dark:text-gray-400">15.6 Followers</p>
-					</div>
-				</button>
-
-				<button className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
+				{/*<button className="flex items-center w-full px-5 py-2 transition-colors duration-200 dark:hover:bg-gray-800 gap-x-2 hover:bg-gray-100 focus:outline-none">
 					<img
 						className="object-cover w-8 h-8 rounded-full"
 						src="https://images.unsplash.com/photo-1531590878845-12627191e687?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&h=764&q=80"
@@ -125,7 +137,33 @@ const BotDevices = (): JSX.Element => {
 
 						<p className="text-xs text-gray-500 dark:text-gray-400">56.6 Followers</p>
 					</div>
-				</button>
+				</button> */}
+
+				{/* 
+				--- ACTIVE CARD ---
+				<button
+							key={device._id}
+							className="flex items-center w-full px-5 py-2 transition-colors duration-200 bg-gray-100 dark:bg-gray-800 gap-x-2 focus:outline-none"
+						>
+							<div className="relative">
+								<img
+									className="object-cover w-8 h-8 rounded-full"
+									src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&h=764&q=100"
+									alt=""
+								/>
+								<span className="h-2 w-2 rounded-full bg-emerald-500 absolute right-0.5 ring-1 ring-white bottom-0"></span>
+							</div>
+
+							<div className="text-left rtl:text-right">
+								<h1 className="text-sm font-medium text-gray-700 capitalize dark:text-white">
+									Jane Doe
+								</h1>
+
+								<p className="text-xs text-gray-500 dark:text-gray-400">
+									15.6 Followers
+								</p>
+							</div>
+						</button> */}
 			</div>
 		</div>
 	);
