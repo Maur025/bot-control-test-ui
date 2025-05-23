@@ -21,8 +21,8 @@ const { MONITOR_ALL_DEVICES } = SocketRoom;
 
 export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarkersResponse => {
 	const deviceFeatureRef = useRef<Map<string, Feature>>(new Map());
-	const lineMovementRef = useRef<Feature<LineString>>(null);
-	const movementHistoryRef = useRef<Coordinate[]>([]);
+	const lineMovementRef = useRef<Map<string, Feature<LineString>>>(new Map());
+	const movementHistoryRef = useRef<Map<string, Coordinate[]>>(new Map());
 
 	const { socket } = useSocketStore();
 	const { joinRoom, leaveRoom } = useSocketRoomHandler();
@@ -52,10 +52,10 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 					geometry: new Point(coords),
 				});
 
-				lineMovementRef.current = new Feature(new LineString([]));
+				const routeLine: Feature<LineString> = new Feature(new LineString([]));
 
 				feature.setStyle(new Style({ image: new Icon({ src: "/navigation-3.webp" }) }));
-				lineMovementRef.current.setStyle(
+				routeLine.setStyle(
 					new Style({
 						stroke: new Stroke({
 							color: "black",
@@ -66,9 +66,11 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 				);
 
 				deviceVectorSource.addFeature(feature);
-				deviceVectorSource.addFeature(lineMovementRef.current);
+				deviceVectorSource.addFeature(routeLine);
 
 				deviceFeatureRef.current.set(deviceId, feature);
+				lineMovementRef.current.set(deviceId, routeLine);
+				movementHistoryRef.current.set(deviceId, [coords]);
 			} else {
 				const geometry: Geometry | undefined = feature.getGeometry();
 
@@ -76,9 +78,11 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 					geometry.setCoordinates(coords);
 				}
 
-				movementHistoryRef.current = [...movementHistoryRef.current, coords];
+				const lineFeature = lineMovementRef.current?.get(deviceId);
+				let lineHistory = movementHistoryRef.current?.get(deviceId);
+				lineHistory = [...(lineHistory ?? []), coords];
 
-				lineMovementRef.current?.getGeometry()?.setCoordinates(movementHistoryRef.current);
+				lineFeature?.getGeometry()?.setCoordinates(lineHistory);
 			}
 		};
 
