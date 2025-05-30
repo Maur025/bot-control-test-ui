@@ -39,7 +39,7 @@ const Sidebar = (): JSX.Element => {
 				</NavLink>
 
 				<NavLink
-					to="bot"
+					to="gps-monitor"
 					end
 					className={({ isActive }: { isActive: boolean }) =>
 						`${

@@ -83,6 +83,7 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 				lineHistory = [...(lineHistory ?? []), coords];
 
 				lineFeature?.getGeometry()?.setCoordinates(lineHistory);
+				movementHistoryRef.current.set(deviceId, lineHistory);
 			}
 		};
 
