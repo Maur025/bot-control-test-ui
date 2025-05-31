@@ -4,7 +4,7 @@ import { Point } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
-import { OSM } from "ol/source";
+import { OSM, XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { Icon, Style } from "ol/style";
 import { useEffect, useRef, type RefObject } from "react";
@@ -48,7 +48,11 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 		mapRef.current = new Map({
 			target: containerRef.current,
 			layers: [
-				new TileLayer({ source: new OSM() }),
+				new TileLayer({
+					source: new XYZ({
+						url: "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+					}),
+				}),
 				new VectorLayer({ source: vectorSourceRef.current }),
 				new VectorLayer({ source: deviceVectorSource }),
 			],
