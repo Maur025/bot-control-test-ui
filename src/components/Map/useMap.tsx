@@ -4,7 +4,7 @@ import { Point } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
-import { OSM, XYZ } from "ol/source";
+import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { Icon, Style } from "ol/style";
 import { useEffect, useRef, type RefObject } from "react";
