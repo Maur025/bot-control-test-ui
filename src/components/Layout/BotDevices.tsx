@@ -18,7 +18,7 @@ const BotDevices = (): JSX.Element => {
 			setIsLoading(false);
 		};
 
-		getDeviceList();
+		// getDeviceList();
 	}, []);
 
 	return (
