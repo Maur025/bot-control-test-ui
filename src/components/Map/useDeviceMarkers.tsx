@@ -54,7 +54,12 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 
 				const routeLine: Feature<LineString> = new Feature(new LineString([]));
 
-				feature.setStyle(new Style({ image: new Icon({ src: "/navigation-3.webp" }) }));
+				feature.setStyle(
+					new Style({
+						image: new Icon({ src: "/navigation-3.webp", scale: 0.8 }),
+					}),
+				);
+
 				routeLine.setStyle(
 					new Style({
 						stroke: new Stroke({
@@ -64,6 +69,8 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 						}),
 					}),
 				);
+
+				feature.setProperties({ id: deviceId });
 
 				deviceVectorSource.addFeature(feature);
 				deviceVectorSource.addFeature(routeLine);
@@ -80,11 +87,36 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 
 				const lineFeature = lineMovementRef.current?.get(deviceId);
 				let lineHistory = movementHistoryRef.current?.get(deviceId);
+
+				if (lineHistory?.length) {
+					const lastCoord = lineHistory[lineHistory.length - 1];
+					const rotation = getAngleByCoords(lastCoord, coords);
+
+					feature.setStyle(
+						new Style({
+							image: new Icon({ src: "/navigation-3.webp", scale: 0.8, rotation }),
+						}),
+					);
+				}
+
 				lineHistory = [...(lineHistory ?? []), coords];
 
 				lineFeature?.getGeometry()?.setCoordinates(lineHistory);
 				movementHistoryRef.current.set(deviceId, lineHistory);
 			}
+		};
+
+		const getAngleByCoords = ([x1, y1]: Coordinate, [x2, y2]: Coordinate) => {
+			const differenceInX = x2 - x1;
+			const differenceInY = y2 - y1;
+
+			let angleInRadians = Math.atan2(-differenceInY, differenceInX); // ajuste por canvas --- eje y invertido
+
+			if (angleInRadians < 0) {
+				angleInRadians = angleInRadians + Math.PI * 2;
+			}
+
+			return angleInRadians;
 		};
 
 		socket.on(DEVICE_LOCATION_LAST, (payload: SingleIoResponse<DeviceCurrentLocation>) =>

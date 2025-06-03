@@ -24,4 +24,11 @@ export const SocketTopic = {
 	DEVICE_UNSUBSCRIBE: "device.unsubscribe",
 	DEVICE_UNSUBSCRIBE_ALL: "device.unsubscribe.all",
 	DEVICE_SUBSCRIBE: "device.subscribe",
+	// bot control topics
+	BOT_GET_IS_RUNNING: "bot:get:is-running",
+	BOT_IS_RUNNING: "bot:is-running",
+	BOT_REQ_STOP: "bot:req-stop",
+	BOT_REQ_STOP_RESPONSE: "bot:req-stop:response",
+	BOT_REQ_START: "bot:req-start",
+	BOT_REQ_START_RESPONSE: "bot:req-start:response",
 } as const;
