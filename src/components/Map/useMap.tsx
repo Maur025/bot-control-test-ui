@@ -7,7 +7,7 @@ import { fromLonLat } from "ol/proj";
 import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { Icon, Style } from "ol/style";
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 interface MapRequest {
 	containerRef: RefObject<HTMLDivElement | null>;
@@ -19,6 +19,7 @@ interface MapResponse {
 	mapRef: RefObject<Map | null>;
 	vectorSourceRef: RefObject<VectorSource | null>;
 	positionFeatureRef: RefObject<Feature | null>;
+	isDefined: boolean;
 }
 
 export const useMap = ({ containerRef, position, deviceVectorSource }: MapRequest): MapResponse => {
@@ -26,6 +27,8 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 	const vectorSourceRef = useRef<VectorSource>(null);
 	const viewRef = useRef<View>(null);
 	const mapRef = useRef<Map>(null);
+
+	const [isDefined, setIsDefined] = useState<boolean>(false);
 
 	useEffect(() => {
 		if (!containerRef.current || !position || !deviceVectorSource) {
@@ -54,7 +57,9 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 					}),
 				}),
 				new VectorLayer({ source: vectorSourceRef.current }),
-				new VectorLayer({ source: deviceVectorSource }),
+				new VectorLayer({
+					source: deviceVectorSource,
+				}),
 			],
 			view: viewRef.current,
 		});
@@ -65,8 +70,10 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 			}),
 		);
 
+		setIsDefined((state) => !state);
+
 		return () => mapRef.current?.setTarget(undefined);
 	}, [containerRef, position, deviceVectorSource]);
 
-	return { mapRef, vectorSourceRef, positionFeatureRef };
+	return { mapRef, vectorSourceRef, positionFeatureRef, isDefined };
 };
