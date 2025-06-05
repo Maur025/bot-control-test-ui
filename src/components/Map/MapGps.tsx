@@ -5,7 +5,7 @@ import { useMap } from "./useMap";
 import { useSocketGpsStore } from "../../store/useSocketGpsStore";
 import { SocketTopic } from "../../socket-topic";
 
-const { MESSAGE, DEVICES } = SocketTopic;
+const { MESSAGE, DEVICES, DEVICE_LAST, DEVICE_STATE } = SocketTopic;
 
 const MapGps = (): JSX.Element => {
 	const elementMapRef = useRef<HTMLDivElement>(null);
@@ -24,6 +24,14 @@ const MapGps = (): JSX.Element => {
 
 		socket.on(DEVICES, (payload) => {
 			console.log(payload);
+		});
+
+		socket.on(DEVICE_LAST, (payload) => {
+			console.log("recibiendo last", payload);
+		});
+
+		socket.on(DEVICE_STATE, (payload) => {
+			console.log("recibiendo STATE", payload);
 		});
 
 		return () => {
