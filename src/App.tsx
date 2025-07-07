@@ -10,8 +10,11 @@ import { useSocketGpsStore } from "./store/useSocketGpsStore";
 import { useRoomGpsHandler } from "./hooks/useRoomGpsHandler";
 import { useSocketHandler } from "./hooks/useSocketHandler";
 import GpsMonitor from "./pages/GpsMonitor";
+import { useEffect } from "react";
+import { useUserIdHandler } from "./hooks/useUserIdHandler";
 
 function App() {
+	const { initializeUserId } = useUserIdHandler();
 	const { connect, disconnect, socket } = useSocketStore();
 	const { reconnectRooms } = useSocketRoomHandler();
 
@@ -31,6 +34,14 @@ function App() {
 		reconnectRooms: reconnectGpsRooms,
 		label: "GPS",
 	});
+
+	useEffect(() => {
+		if (!initializeUserId) {
+			return;
+		}
+
+		initializeUserId();
+	}, [initializeUserId]);
 
 	return (
 		<ThemeProvider>
