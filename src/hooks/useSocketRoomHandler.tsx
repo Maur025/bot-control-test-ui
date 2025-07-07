@@ -18,9 +18,9 @@ export const useSocketRoomHandler = () => {
 		socket?.emit(ROOM_LEAVE, room);
 	};
 
-	const reconnectRooms = () => {
+	const reconnectRooms = (userId?: string) => {
 		currentRooms.forEach((room) => {
-			socket?.emit(ROOM_JOIN, room);
+			socket?.emit(ROOM_JOIN, room, userId);
 		});
 	};
 

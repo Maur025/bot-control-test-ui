@@ -4,13 +4,20 @@ import VectorSource from "ol/source/Vector";
 import { useMap } from "./useMap";
 import { useSocketGpsStore } from "../../store/useSocketGpsStore";
 import { SocketTopic } from "../../socket-topic";
+import { SocketRoom } from "../../socket-room";
+import { useRoomGpsHandler } from "../../hooks/useRoomGpsHandler";
 
-const { MESSAGE, DEVICES, DEVICE_LAST, DEVICE_STATE } = SocketTopic;
+const { MESSAGE, DEVICES, VEHICLE_SORTBY_GEOFENCE_RESPONSE, VEHICLE_SORTBY_GROUP_RESPONSE } =
+	SocketTopic;
+
+const { DEVICE_MONITORING_ROOM } = SocketRoom;
 
 const MapGps = (): JSX.Element => {
 	const elementMapRef = useRef<HTMLDivElement>(null);
 
 	const { currentPosition } = useCurrentPosition();
+	const { joinRoom, leaveRoom } = useRoomGpsHandler();
+
 	const gpsVectorSource = useMemo(() => new VectorSource(), []);
 
 	const { socket } = useSocketGpsStore();
@@ -20,23 +27,32 @@ const MapGps = (): JSX.Element => {
 			return;
 		}
 
+		joinRoom(DEVICE_MONITORING_ROOM);
+
+		const handleOnDevices = (payload: unknown): void => {
+			console.log("DEVICES", payload);
+		};
+
+		const handleOnVehiclesGroup = (payload: unknown): void => {
+			console.log("VEHICLES GROUP", payload);
+		};
+
+		const handleOnVehiclesGeofence = (payload: unknown): void => {
+			console.log("VEHICLES GEOFENCE", payload);
+		};
+
 		socket.emit(MESSAGE, "conectando para recibir dispositivos");
-
-		socket.on(DEVICES, (payload) => {
-			console.log(payload);
-		});
-
-		socket.on(DEVICE_LAST, (payload) => {
-			console.log("recibiendo last", payload);
-		});
-
-		socket.on(DEVICE_STATE, (payload) => {
-			console.log("recibiendo STATE", payload);
-		});
+		socket.on(DEVICES, handleOnDevices);
+		socket.on(VEHICLE_SORTBY_GEOFENCE_RESPONSE, handleOnVehiclesGeofence);
+		socket.on(VEHICLE_SORTBY_GROUP_RESPONSE, handleOnVehiclesGroup);
 
 		return () => {
-			socket.off(DEVICES);
+			leaveRoom(DEVICE_MONITORING_ROOM);
+			socket.off(DEVICES, handleOnDevices);
+			socket.off(VEHICLE_SORTBY_GEOFENCE_RESPONSE, handleOnVehiclesGeofence);
+			socket.off(VEHICLE_SORTBY_GROUP_RESPONSE, handleOnVehiclesGroup);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [socket]);
 
 	useMap({

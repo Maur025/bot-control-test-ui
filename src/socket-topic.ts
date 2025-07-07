@@ -31,4 +31,16 @@ export const SocketTopic = {
 	BOT_REQ_STOP_RESPONSE: "bot:req-stop:response",
 	BOT_REQ_START: "bot:req-start",
 	BOT_REQ_START_RESPONSE: "bot:req-start:response",
+	// gps tracking topics
+	ROOM_JOIN_REQUEST_GPS: "room:join:request",
+	ROOM_JOIN_RESPONSE_GPS: "room:join:response",
+	ROOM_LEAVE_REQUEST_GPS: "room:leave:request",
+	ROOM_LEAVE_RESPONSE_GPS: "room:leave:response",
+	ROOM_LIST_REQUEST_GPS: "room:list:request",
+	ROOM_LIST_RESPONSE_GPS: "room:list:response",
+	// VEHICLE TOPICS
+	VEHICLE_SORTBY_GEOFENCE_RESPONSE: "vehicle:sortby:geofence:response",
+	VEHICLE_SORTBY_GROUP_RESPONSE: "vehicle:sortby:group:response",
+	VEHICLE_SORTBY_GEOFENCE_REQUEST: "vehicle:sortby:geofence:request",
+	VEHICLE_SORTBY_GROUP_REQUEST: "vehicle:sortby:group:request",
 } as const;
