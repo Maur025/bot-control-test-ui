@@ -8,6 +8,7 @@ import { XYZ } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import { Icon, Style } from "ol/style";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { getCachedVehicleStyle } from "../../util/cache-vehicle-style";
 
 interface MapRequest {
 	containerRef: RefObject<HTMLDivElement | null>;
@@ -59,6 +60,11 @@ export const useMap = ({ containerRef, position, deviceVectorSource }: MapReques
 				new VectorLayer({ source: vectorSourceRef.current }),
 				new VectorLayer({
 					source: deviceVectorSource,
+					style: (feature) => {
+						const rotation = feature.get("rotation") || 0;
+
+						return getCachedVehicleStyle(rotation);
+					},
 				}),
 			],
 			view: viewRef.current,

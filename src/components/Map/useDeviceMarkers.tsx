@@ -1,110 +1,33 @@
 import { Feature } from "ol";
 import VectorSource from "ol/source/Vector";
 import { useEffect, useRef, type RefObject } from "react";
-import type { DeviceCurrentLocation } from "../../models/device-current-location";
 import { Geometry, LineString, Point } from "ol/geom";
 import { fromLonLat } from "ol/proj";
-import { Icon, Stroke, Style } from "ol/style";
-import { SocketTopic } from "../../socket-topic";
-import { useSocketStore } from "../../store/useSocketStore";
-import { SocketRoom } from "../../socket-room";
-import type { SingleIoResponse } from "@maur025/core-model-data";
-import { useSocketRoomHandler } from "../../hooks/useSocketRoomHandler";
+import { Stroke, Style } from "ol/style";
 import type { Coordinate } from "ol/coordinate";
+import { useDeviceStore } from "../../store/useDevicesStore";
 
 interface DeviceMarkersResponse {
 	deviceFeatureRef: RefObject<Map<string, Feature>>;
 }
 
-const { DEVICE_LOCATION_LAST } = SocketTopic;
-const { MONITOR_ALL_DEVICES } = SocketRoom;
+const LINE_STYLE = new Style({
+	stroke: new Stroke({
+		color: "orange",
+		width: 4,
+	}),
+});
 
 export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarkersResponse => {
 	const deviceFeatureRef = useRef<Map<string, Feature>>(new Map());
 	const lineMovementRef = useRef<Map<string, Feature<LineString>>>(new Map());
 	const movementHistoryRef = useRef<Map<string, Coordinate[]>>(new Map());
-
-	const { socket } = useSocketStore();
-	const { joinRoom, leaveRoom } = useSocketRoomHandler();
+	const { devices } = useDeviceStore();
 
 	useEffect(() => {
-		if (!socket) {
+		if (!devices || !deviceVectorSource) {
 			return;
 		}
-
-		joinRoom(MONITOR_ALL_DEVICES);
-
-		const deviceLastPositionHandler = ({ data }: SingleIoResponse<DeviceCurrentLocation>) => {
-			if (!data?.id || !deviceVectorSource) {
-				return;
-			}
-
-			const {
-				id: deviceId,
-				last: { lat = 0, lon = 0 },
-			} = data;
-
-			const coords: Coordinate = fromLonLat([lon, lat]);
-			let feature = deviceFeatureRef.current.get(deviceId);
-
-			if (!feature) {
-				feature = new Feature({
-					geometry: new Point(coords),
-				});
-
-				const routeLine: Feature<LineString> = new Feature(new LineString([]));
-
-				feature.setStyle(
-					new Style({
-						image: new Icon({ src: "/navigation-3.webp", scale: 0.8 }),
-					}),
-				);
-
-				routeLine.setStyle(
-					new Style({
-						stroke: new Stroke({
-							color: "black",
-							width: 5,
-							lineDash: [5, 15],
-						}),
-					}),
-				);
-
-				feature.setProperties({ id: deviceId });
-
-				deviceVectorSource.addFeature(feature);
-				deviceVectorSource.addFeature(routeLine);
-
-				deviceFeatureRef.current.set(deviceId, feature);
-				lineMovementRef.current.set(deviceId, routeLine);
-				movementHistoryRef.current.set(deviceId, [coords]);
-			} else {
-				const geometry: Geometry | undefined = feature.getGeometry();
-
-				if (geometry instanceof Point) {
-					geometry.setCoordinates(coords);
-				}
-
-				const lineFeature = lineMovementRef.current?.get(deviceId);
-				let lineHistory = movementHistoryRef.current?.get(deviceId);
-
-				if (lineHistory?.length) {
-					const lastCoord = lineHistory[lineHistory.length - 1];
-					const rotation = getAngleByCoords(lastCoord, coords);
-
-					feature.setStyle(
-						new Style({
-							image: new Icon({ src: "/navigation-3.webp", scale: 0.8, rotation }),
-						}),
-					);
-				}
-
-				lineHistory = [...(lineHistory ?? []), coords];
-
-				lineFeature?.getGeometry()?.setCoordinates(lineHistory);
-				movementHistoryRef.current.set(deviceId, lineHistory);
-			}
-		};
 
 		const getAngleByCoords = ([x1, y1]: Coordinate, [x2, y2]: Coordinate) => {
 			const differenceInX = x2 - x1;
@@ -119,16 +42,80 @@ export const useDeviceMarkers = (deviceVectorSource: VectorSource): DeviceMarker
 			return angleInRadians;
 		};
 
-		socket.on(DEVICE_LOCATION_LAST, (payload: SingleIoResponse<DeviceCurrentLocation>) =>
-			deviceLastPositionHandler(payload),
-		);
+		const handleFeatureNotExists = (deviceId: string, coords: Coordinate): Feature => {
+			const feature = new Feature({
+				geometry: new Point(coords),
+			});
+			feature.setProperties({ id: deviceId });
 
-		return () => {
-			leaveRoom(MONITOR_ALL_DEVICES);
-			socket.off(DEVICE_LOCATION_LAST, deviceLastPositionHandler);
+			const routeLine = new Feature({
+				geometry: new LineString([]),
+			});
+			routeLine.setStyle(LINE_STYLE);
+
+			deviceFeatureRef.current.set(deviceId, feature);
+			lineMovementRef.current.set(deviceId, routeLine);
+			movementHistoryRef.current.set(deviceId, [coords]);
+
+			deviceVectorSource.addFeature(feature);
+			deviceVectorSource.addFeature(routeLine);
+
+			return feature;
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [socket, deviceVectorSource]);
+
+		for (const device of devices) {
+			if (!device.id) {
+				continue;
+			}
+
+			const {
+				id: deviceId,
+				last: { lat = 0, lon = 0 },
+			} = device;
+
+			const coords: Coordinate = fromLonLat([lon, lat]);
+
+			let feature = deviceFeatureRef.current.get(deviceId);
+
+			if (!feature) {
+				feature = handleFeatureNotExists(deviceId, coords);
+			} else {
+				const geometry: Geometry | undefined = feature.getGeometry();
+
+				if (geometry instanceof Point) {
+					geometry.setCoordinates(coords);
+				}
+
+				const lineFeature = lineMovementRef.current?.get(deviceId);
+				let lineHistory = movementHistoryRef.current?.get(deviceId) ?? [];
+
+				if (lineHistory.length > 0) {
+					const lastCoord = lineHistory[lineHistory.length - 1];
+
+					if (lastCoord[0] !== coords[0] && lastCoord[1] !== coords[1]) {
+						const rotation = getAngleByCoords(lastCoord, coords);
+
+						feature.setProperties({ rotation: rotation });
+
+						lineHistory = [...lineHistory.slice(-30), coords];
+
+						const lineGeometry = lineFeature?.getGeometry();
+
+						if (lineGeometry instanceof LineString) {
+							lineGeometry.setCoordinates(lineHistory);
+						}
+
+						movementHistoryRef.current.set(deviceId, lineHistory);
+					}
+				} else {
+					lineHistory.push(coords);
+					movementHistoryRef.current.set(deviceId, lineHistory);
+				}
+			}
+		}
+
+		return () => {};
+	}, [deviceVectorSource, devices]);
 
 	return { deviceFeatureRef };
 };
